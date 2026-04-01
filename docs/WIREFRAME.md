@@ -10,22 +10,22 @@
 ### 1.1 레이아웃 계층 구조 (Mermaid)
 ```mermaid
 graph TD
-    PublicPage[사용자 퍼블릭 페이지]
+    PublicPage["사용자 퍼블릭 페이지"]
     
-    PublicPage --> Header[상단 헤더 영역]
-    Header --> ShareBtn[공유(Share) 버튼]
+    PublicPage --> Header["상단 헤더 영역"]
+    Header --> ShareBtn["공유(Share) 버튼"]
     
-    PublicPage --> Profile[프로필 메인 영역]
-    Profile --> Avatar[구글 프로필 이미지]
-    Profile --> Nickname[닉네임 `@nickname` 제외]
-    Profile --> Bio[자기소개 문구]
+    PublicPage --> Profile["프로필 메인 영역"]
+    Profile --> Avatar["구글 프로필 이미지"]
+    Profile --> Nickname["닉네임 '@nickname' 제외"]
+    Profile --> Bio["자기소개 문구"]
     
-    PublicPage --> LinkContainer[링크 리스트 영역]
-    LinkContainer --> Link1[링크 버튼 1: 클릭 시 새 탭 이동]
-    LinkContainer --> Link2[링크 버튼 2: 이벤트 비활성화 시 숨김]
+    PublicPage --> LinkContainer["링크 리스트 영역"]
+    LinkContainer --> Link1["링크 버튼 1: 클릭 시 새 탭 이동"]
+    LinkContainer --> Link2["링크 버튼 2: 이벤트 비활성화 시 숨김"]
     
-    Link1 -.-> Favicon[구글 파비콘 아이콘]
-    Link1 -.-> Title[사용자 커스텀 제목]
+    Link1 -.-> Favicon["구글 파비콘 아이콘"]
+    Link1 -.-> Title["사용자 커스텀 제목"]
 ```
 
 ### 1.2 모바일 화면 와이어프레임 (ASCII Art)
@@ -67,23 +67,23 @@ graph TD
 ### 2.1 관리자 대시보드 컴포넌트 구조 (Mermaid)
 ```mermaid
 graph TD
-    Admin[관리자 대시보드 레이아웃]
+    Admin["관리자 대시보드 레이아웃"]
     
-    Admin --> LeftSide[좌측: 편집/설정 패널]
-    Admin --> RightSide[우측: 실시간 미리보기 패널]
+    Admin --> LeftSide["좌측: 편집/설정 패널"]
+    Admin --> RightSide["우측: 실시간 미리보기 패널"]
     
-    LeftSide --> InputGroup[링크 추가 영역]
-    InputGroup --> UrlField[URL 입력 폼]
-    InputGroup --> AddBtn[링크 추출 및 추가 버튼]
+    LeftSide --> InputGroup["링크 추가 영역"]
+    InputGroup --> UrlField["URL 입력 폼"]
+    InputGroup --> AddBtn["링크 추출 및 추가 버튼"]
     
-    LeftSide --> ItemList[드래그 앤 드롭 리스트]
-    ItemList --> DragHandle[정렬 핸들 '::']
-    ItemList --> InlineTitle[제목 '인라인 편집']
-    ItemList --> InlineUrl[URL '인라인 편집']
-    ItemList --> ToggleBtn[숨김/활성 토글 스위치]
-    ItemList --> Delete[즉시 삭제 아이콘 '휴지통']
+    LeftSide --> ItemList["드래그 앤 드롭 리스트"]
+    ItemList --> DragHandle["정렬 핸들 '::'"]
+    ItemList --> InlineTitle["제목 '인라인 편집'"]
+    ItemList --> InlineUrl["URL '인라인 편집'"]
+    ItemList --> ToggleBtn["숨김/활성 토글 스위치"]
+    ItemList --> Delete["즉시 삭제 아이콘 '휴지통'"]
     
-    RightSide --> Preview[모바일 크기의 Live Preview 렌더링]
+    RightSide --> Preview["모바일 크기의 Live Preview 렌더링"]
     LeftSide -.-> |"인라인 편집 시 스낵바 알림 & 실시간 동기화"| Preview
 ```
 
