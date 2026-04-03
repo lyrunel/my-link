@@ -11,7 +11,7 @@ export interface LinkItem {
 export const dummyLinks: LinkItem[] = [
   {
     id: '1',
-    title: '인스타그램',
+    title: 'Instagram',
     url: 'https://instagram.com',
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=instagram.com',
     order_index: 0,
@@ -19,7 +19,7 @@ export const dummyLinks: LinkItem[] = [
   },
   {
     id: '2',
-    title: '유튜브',
+    title: 'YouTube',
     url: 'https://youtube.com',
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=youtube.com',
     order_index: 1,
@@ -27,7 +27,7 @@ export const dummyLinks: LinkItem[] = [
   },
   {
     id: '3',
-    title: '블로그',
+    title: 'Blog',
     url: 'https://blog.naver.com',
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=blog.naver.com',
     order_index: 2,
@@ -43,7 +43,7 @@ export const dummyLinks: LinkItem[] = [
   },
   {
     id: '5',
-    title: '포트폴리오',
+    title: 'Portfolio',
     url: 'https://myportfolio.com',
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=myportfolio.com',
     order_index: 4,
