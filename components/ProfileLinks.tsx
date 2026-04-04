@@ -64,7 +64,7 @@ export function ProfileLinks() {
       id: Date.now().toString(),
       title: data.title.trim(),
       url: finalUrl,
-      icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64`,
+      icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
       order_index: links.length,
       is_active: true,
     };
