@@ -1,0 +1,187 @@
+"use client";
+
+import { useState } from "react";
+import { dummyLinks, LinkItem } from "@/data/links";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { RiAddLine } from "@remixicon/react";
+
+export function ProfileLinks() {
+  const [links, setLinks] = useState<LinkItem[]>(dummyLinks);
+  const [open, setOpen] = useState(false);
+  
+  // Form states
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+
+  const handleAddLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!title.trim()) {
+      setError("링크 제목을 올바르게 입력해주세요.");
+      return;
+    }
+    if (!url.trim()) {
+      setError("URL을 입력해주세요.");
+      return;
+    }
+
+    let domain = url;
+    let finalUrl = url.startsWith('http') ? url : `https://${url}`;
+    
+    try {
+      const parsedUrl = new URL(finalUrl);
+      domain = parsedUrl.hostname;
+      if (!domain.includes('.')) {
+        throw new Error("Invalid format");
+      }
+    } catch {
+      setError("유효한 웹사이트 주소 형식이 아닙니다. (예: facebook.com)");
+      return;
+    }
+
+    const newLink: LinkItem = {
+      id: Date.now().toString(),
+      title: title.trim(),
+      url: finalUrl,
+      icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64`,
+      order_index: links.length,
+      is_active: true,
+    };
+
+    setLinks([newLink, ...links]);
+    setOpen(false);
+    setTitle("");
+    setUrl("");
+    setError("");
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      {/* Add Link Button */}
+      <Dialog open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) { 
+          setTitle(""); 
+          setUrl(""); 
+          setError(""); 
+        }
+      }}>
+        <DialogTrigger 
+          render={
+            <Button 
+              className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white shadow-[0_8px_30px_rgb(79,70,229,0.25)] hover:shadow-[0_12px_40px_rgb(79,70,229,0.4)] border-none hover:-translate-y-1 font-semibold text-base transition-all duration-300 ease-out group"
+            />
+          }
+        >
+          <RiAddLine className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+          새 링크 추가
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">새 링크 추가</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddLink} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">링크 제목</Label>
+              <Input 
+                id="title" 
+                type="text"
+                placeholder="예: 내 포트폴리오" 
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (error) setError("");
+                }}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="url">URL</Label>
+              <Input 
+                id="url" 
+                type="text"
+                placeholder="예: https://myportfolio.com" 
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  if (error) setError("");
+                }}
+                required
+              />
+            </div>
+            {error && (
+              <p className="text-sm font-medium text-red-500 dark:text-red-400">
+                {error}
+              </p>
+            )}
+            <DialogFooter className="pt-4 flex !justify-between sm:!justify-end gap-2">
+              <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
+                취소
+              </DialogClose>
+              <Button type="submit" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
+                추가하기
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Links List */}
+      <div className="flex flex-col gap-4 mt-2">
+        {links.map((link) => (
+          <a
+            key={link.id}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/50 rounded-2xl block group"
+          >
+            <Card className="relative overflow-hidden bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.02)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_40px_rgb(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 ease-out border-b-2 hover:border-b-indigo-500/50 dark:hover:border-b-indigo-400/50 rounded-2xl">
+              
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/5 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+              
+              <CardContent className="p-4 sm:p-5 flex items-center relative min-h-[72px]">
+                
+                {link.icon && (
+                  <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center bg-white/80 dark:bg-black/40 shadow-sm border border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-500 z-10 p-[2px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={link.icon}
+                      alt={link.title}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                )}
+                
+                <span className="w-full text-center font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 z-10 pl-10 pr-4 sm:pl-12">
+                  {link.title}
+                </span>
+                
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 z-10">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+
+              </CardContent>
+            </Card>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}

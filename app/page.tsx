@@ -1,5 +1,4 @@
-import { dummyLinks } from '@/data/links';
-import { Card, CardContent } from '@/components/ui/card';
+import { ProfileLinks } from '@/components/ProfileLinks';
 
 export default function Page() {
   return (
@@ -42,52 +41,7 @@ export default function Page() {
           </div>
         </div>
         
-        {/* Links List with Glassmorphism */}
-        <div className="w-full flex flex-col gap-4">
-          {dummyLinks.map((link) => (
-            <a
-              key={link.id}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/50 rounded-2xl block group"
-            >
-              <Card className="relative overflow-hidden bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.02)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_40px_rgb(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 ease-out border-b-2 hover:border-b-indigo-500/50 dark:hover:border-b-indigo-400/50 rounded-2xl">
-                
-                {/* Decorative hover gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/5 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-                
-                <CardContent className="p-4 sm:p-5 flex items-center relative min-h-[72px]">
-                  
-                  {/* Glass Icon Bubble */}
-                  {link.icon && (
-                    <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center bg-white/80 dark:bg-black/40 shadow-sm border border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-500 z-10 p-[2px]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={link.icon}
-                        alt={link.title}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Animated Text */}
-                  <span className="w-full text-center font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 z-10 pl-10 pr-4 sm:pl-12">
-                    {link.title}
-                  </span>
-                  
-                  {/* Chevron right indicator */}
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 z-10">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-
-                </CardContent>
-              </Card>
-            </a>
-          ))}
-        </div>
+        <ProfileLinks />
       </div>
     </main>
   );
