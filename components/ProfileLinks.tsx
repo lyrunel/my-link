@@ -17,45 +17,52 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RiAddLine } from "@remixicon/react";
 
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const linkSchema = z.object({
+  title: z.string().min(1, "링크 제목을 입력해주세요."),
+  url: z.string().min(1, "URL을 입력해주세요.").superRefine((val, ctx) => {
+    const finalUrl = val.startsWith('http') ? val : `https://${val}`;
+    try {
+      const parsedUrl = new URL(finalUrl);
+      if (!parsedUrl.hostname.includes('.') || parsedUrl.hostname.length < 3) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "유효한 웹사이트 주소가 아닙니다. (예: example.com)" });
+      }
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "올바른 URL 형식을 입력해주세요." });
+    }
+  })
+});
+
+type LinkFormValues = z.infer<typeof linkSchema>;
+
 export function ProfileLinks() {
   const [links, setLinks] = useState<LinkItem[]>(dummyLinks);
   const [open, setOpen] = useState(false);
   
-  // Form states
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
+  const form = useForm<LinkFormValues>({
+    resolver: zodResolver(linkSchema),
+    defaultValues: {
+      title: "",
+      url: "",
+    },
+  });
 
-  const handleAddLink = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!title.trim()) {
-      setError("링크 제목을 올바르게 입력해주세요.");
-      return;
-    }
-    if (!url.trim()) {
-      setError("URL을 입력해주세요.");
-      return;
-    }
-
-    let domain = url;
-    let finalUrl = url.startsWith('http') ? url : `https://${url}`;
-    
+  const onSubmit = (data: LinkFormValues) => {
+    const finalUrl = data.url.startsWith('http') ? data.url : `https://${data.url}`;
+    let domain = data.url;
     try {
       const parsedUrl = new URL(finalUrl);
       domain = parsedUrl.hostname;
-      if (!domain.includes('.')) {
-        throw new Error("Invalid format");
-      }
     } catch {
-      setError("유효한 웹사이트 주소 형식이 아닙니다. (예: facebook.com)");
-      return;
+      // ignore
     }
 
     const newLink: LinkItem = {
       id: Date.now().toString(),
-      title: title.trim(),
+      title: data.title.trim(),
       url: finalUrl,
       icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64`,
       order_index: links.length,
@@ -64,9 +71,7 @@ export function ProfileLinks() {
 
     setLinks([newLink, ...links]);
     setOpen(false);
-    setTitle("");
-    setUrl("");
-    setError("");
+    form.reset();
   };
 
   return (
@@ -75,9 +80,7 @@ export function ProfileLinks() {
       <Dialog open={open} onOpenChange={(isOpen) => {
         setOpen(isOpen);
         if (!isOpen) { 
-          setTitle(""); 
-          setUrl(""); 
-          setError(""); 
+          form.reset();
         }
       }}>
         <DialogTrigger 
@@ -94,20 +97,20 @@ export function ProfileLinks() {
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">새 링크 추가</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleAddLink} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">링크 제목</Label>
               <Input 
                 id="title" 
                 type="text"
                 placeholder="예: 내 포트폴리오" 
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (error) setError("");
-                }}
-                required
+                {...form.register("title")}
               />
+              {form.formState.errors.title && (
+                <p className="text-sm font-medium text-red-500 dark:text-red-400">
+                  {form.formState.errors.title.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="url">URL</Label>
@@ -115,19 +118,14 @@ export function ProfileLinks() {
                 id="url" 
                 type="text"
                 placeholder="예: https://myportfolio.com" 
-                value={url}
-                onChange={(e) => {
-                  setUrl(e.target.value);
-                  if (error) setError("");
-                }}
-                required
+                {...form.register("url")}
               />
+              {form.formState.errors.url && (
+                <p className="text-sm font-medium text-red-500 dark:text-red-400">
+                  {form.formState.errors.url.message}
+                </p>
+              )}
             </div>
-            {error && (
-              <p className="text-sm font-medium text-red-500 dark:text-red-400">
-                {error}
-              </p>
-            )}
             <DialogFooter className="pt-4 flex !justify-between sm:!justify-end gap-2">
               <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
                 취소
