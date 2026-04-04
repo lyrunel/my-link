@@ -155,12 +155,12 @@ export function ProfileLinks() {
               <CardContent className="p-4 sm:p-5 flex items-center relative min-h-[72px]">
                 
                 {link.icon && (
-                  <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center bg-white/80 dark:bg-black/40 shadow-sm border border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-500 z-10 p-[2px]">
+                  <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center bg-white/80 dark:bg-black/40 shadow-sm border border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-500 z-10 p-[4px]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={link.icon}
                       alt={link.title}
-                      className="w-full h-full object-cover rounded-full"
+                      className="w-full h-full object-contain rounded-lg"
                     />
                   </div>
                 )}

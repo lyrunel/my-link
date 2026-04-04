@@ -28,8 +28,8 @@ export const dummyLinks: LinkItem[] = [
   {
     id: '3',
     title: 'Blog',
-    url: 'https://blog.naver.com',
-    icon: 'https://s2.googleusercontent.com/s2/favicons?domain=blog.naver.com&sz=256',
+    url: 'https://blogger.com',
+    icon: 'https://s2.googleusercontent.com/s2/favicons?domain=blogger.com&sz=256',
     order_index: 2,
     is_active: true,
   },
