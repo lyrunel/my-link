@@ -44,6 +44,7 @@ export function ProfileLinks() {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
@@ -56,7 +57,7 @@ export function ProfileLinks() {
   useEffect(() => {
     const q = query(
       collection(db, "users/anonymous/links"),
-      orderBy("order_index", "asc")
+      orderBy("createdAt", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -65,8 +66,10 @@ export function ProfileLinks() {
         ...doc.data()
       })) as LinkItem[];
       setLinks(fetchedLinks);
+      setIsLoading(false);
     }, (error) => {
       console.error("Error fetching links:", error);
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -171,8 +174,17 @@ export function ProfileLinks() {
 
       {/* Links List */}
       <div className="flex flex-col gap-4 mt-2">
-        {links.map((link) => (
-          <a
+        {isLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+          </div>
+        ) : links.length === 0 ? (
+          <div className="text-center py-10 text-sm text-neutral-500 dark:text-neutral-400">
+            아직 추가된 링크가 없습니다.
+          </div>
+        ) : (
+          links.map((link) => (
+            <a
             key={link.id}
             href={link.url}
             target="_blank"
@@ -209,7 +221,8 @@ export function ProfileLinks() {
               </CardContent>
             </Card>
           </a>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
