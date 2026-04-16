@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { dummyLinks, LinkItem } from "@/data/links";
+import { useState, useEffect } from "react";
+import { LinkItem } from "@/data/links";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -39,8 +41,9 @@ const linkSchema = z.object({
 type LinkFormValues = z.infer<typeof linkSchema>;
 
 export function ProfileLinks() {
-  const [links, setLinks] = useState<LinkItem[]>(dummyLinks);
+  const [links, setLinks] = useState<LinkItem[]>([]);
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
@@ -50,28 +53,56 @@ export function ProfileLinks() {
     },
   });
 
-  const onSubmit = (data: LinkFormValues) => {
-    const finalUrl = data.url.startsWith('http') ? data.url : `https://${data.url}`;
-    let domain = data.url;
+  useEffect(() => {
+    const q = query(
+      collection(db, "users/anonymous/links"),
+      orderBy("order_index", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedLinks = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as LinkItem[];
+      setLinks(fetchedLinks);
+    }, (error) => {
+      console.error("Error fetching links:", error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const onSubmit = async (data: LinkFormValues) => {
+    setIsSubmitting(true);
     try {
-      const parsedUrl = new URL(finalUrl);
-      domain = parsedUrl.hostname;
-    } catch {
-      // ignore
+      const finalUrl = data.url.startsWith('http') ? data.url : `https://${data.url}`;
+      let domain = data.url;
+      try {
+        const parsedUrl = new URL(finalUrl);
+        domain = parsedUrl.hostname;
+      } catch {
+        // ignore
+      }
+
+      const newLinkData = {
+        title: data.title.trim(),
+        url: finalUrl,
+        icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
+        order_index: links.length,
+        is_active: true,
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, "users/anonymous/links"), newLinkData);
+      
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error("Error adding link: ", error);
+      alert("링크 추가 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newLink: LinkItem = {
-      id: Date.now().toString(),
-      title: data.title.trim(),
-      url: finalUrl,
-      icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
-      order_index: links.length,
-      is_active: true,
-    };
-
-    setLinks([newLink, ...links]);
-    setOpen(false);
-    form.reset();
   };
 
   return (
@@ -130,8 +161,8 @@ export function ProfileLinks() {
               <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
                 취소
               </DialogClose>
-              <Button type="submit" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
-                추가하기
+              <Button type="submit" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isSubmitting}>
+                {isSubmitting ? "추가 중..." : "추가하기"}
               </Button>
             </DialogFooter>
           </form>
