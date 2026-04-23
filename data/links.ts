@@ -6,6 +6,8 @@ export interface LinkItem {
   // PRD ERD 참고형 추가 필드 (선택 사항)
   order_index?: number;
   is_active?: boolean;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export const dummyLinks: LinkItem[] = [

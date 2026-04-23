@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { LinkItem } from "@/data/links";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RiAddLine, RiEditLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiAddLine, RiEditLine, RiDeleteBinLine, RiLoader4Line } from "@remixicon/react";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -51,9 +51,18 @@ const linkSchema = z.object({
 
 type LinkFormValues = z.infer<typeof linkSchema>;
 
-function LinkItemCard({ link }: { link: LinkItem }) {
+function LinkItemCard({ 
+  link, 
+  onUpdateSuccess, 
+  onDeleteSuccess 
+}: { 
+  link: LinkItem;
+  onUpdateSuccess: (id: string, updatedData: Partial<LinkItem>) => void;
+  onDeleteSuccess: (id: string) => void;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
@@ -83,9 +92,11 @@ function LinkItemCard({ link }: { link: LinkItem }) {
         title: data.title.trim(),
         url: finalUrl,
         icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(doc(db, "users/anonymous/links", link.id), updatedData);
+      onUpdateSuccess(link.id, { ...updatedData, updatedAt: new Date() });
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating link: ", error);
@@ -96,15 +107,16 @@ function LinkItemCard({ link }: { link: LinkItem }) {
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await deleteDoc(doc(db, "users/anonymous/links", link.id));
+      onDeleteSuccess(link.id);
     } catch (error) {
       console.error("Error deleting link: ", error);
       alert("링크 삭제 중 오류가 발생했습니다.");
+      setIsDeleting(false);
     }
   };
-
-
 
   if (isEditing) {
     return (
@@ -158,7 +170,12 @@ function LinkItemCard({ link }: { link: LinkItem }) {
               className="h-9 px-4 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "저장 중..." : "확인"}
+              {isSubmitting ? (
+                <>
+                  <RiLoader4Line className="w-4 h-4 mr-1 animate-spin" />
+                  저장 중...
+                </>
+              ) : "확인"}
             </Button>
           </div>
         </form>
@@ -238,15 +255,21 @@ function LinkItemCard({ link }: { link: LinkItem }) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 gap-2">
-              <AlertDialogCancel className="w-full sm:w-auto h-11 rounded-xl">취소</AlertDialogCancel>
+              <AlertDialogCancel disabled={isDeleting} className="w-full sm:w-auto h-11 rounded-xl">취소</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.preventDefault(); // Don't allow it to self-close by typical action means, wait until onDeleteSuccess
                   handleDelete();
                 }}
+                disabled={isDeleting}
                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white h-11 rounded-xl"
               >
-                삭제
+                {isDeleting ? (
+                  <>
+                    <RiLoader4Line className="w-4 h-4 mr-1 animate-spin" />
+                    삭제 중...
+                  </>
+                ) : "삭제"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -270,25 +293,27 @@ export function ProfileLinks() {
     },
   });
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "users/anonymous/links"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+  const fetchLinks = async () => {
+    try {
+      const q = query(
+        collection(db, "users/anonymous/links"),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
       const fetchedLinks = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as LinkItem[];
       setLinks(fetchedLinks);
-      setIsLoading(false);
-    }, (error) => {
+    } catch (error) {
       console.error("Error fetching links:", error);
+    } finally {
       setIsLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchLinks();
   }, []);
 
   const onSubmit = async (data: LinkFormValues) => {
@@ -312,7 +337,10 @@ export function ProfileLinks() {
         createdAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, "users/anonymous/links"), newLinkData);
+      const docRef = await addDoc(collection(db, "users/anonymous/links"), newLinkData);
+      
+      // Update local state manually
+      setLinks([{ id: docRef.id, ...newLinkData } as LinkItem, ...links]);
       
       setOpen(false);
       form.reset();
@@ -376,12 +404,17 @@ export function ProfileLinks() {
             </div>
             <DialogFooter className="pt-4 flex !justify-between sm:!justify-end gap-2">
               <DialogClose render={
-                <Button type="button" variant="outline" className="w-full sm:w-auto rounded-xl h-11">
+                <Button type="button" variant="outline" className="w-full sm:w-auto rounded-xl h-11" disabled={isSubmitting}>
                   취소
                 </Button>
               } />
               <Button type="submit" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11" disabled={isSubmitting}>
-                {isSubmitting ? "추가 중..." : "추가하기"}
+                {isSubmitting ? (
+                  <>
+                    <RiLoader4Line className="w-4 h-4 mr-1 animate-spin" />
+                    추가 중...
+                  </>
+                ) : "추가하기"}
               </Button>
             </DialogFooter>
           </form>
@@ -392,7 +425,7 @@ export function ProfileLinks() {
       <div className="flex flex-col gap-4 mt-2">
         {isLoading ? (
           <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+            <RiLoader4Line className="animate-spin w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </div>
         ) : links.length === 0 ? (
           <div className="text-center py-10 text-sm text-neutral-500 dark:text-neutral-400">
@@ -400,7 +433,16 @@ export function ProfileLinks() {
           </div>
         ) : (
           links.map((link) => (
-            <LinkItemCard key={link.id} link={link} />
+            <LinkItemCard 
+              key={link.id} 
+              link={link} 
+              onUpdateSuccess={(id, updatedData) => {
+                setLinks(prev => prev.map(l => l.id === id ? { ...l, ...updatedData } as LinkItem : l))
+              }}
+              onDeleteSuccess={(id) => {
+                setLinks(prev => prev.filter(l => l.id !== id))
+              }}
+            />
           ))
         )}
       </div>
