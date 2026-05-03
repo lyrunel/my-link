@@ -53,10 +53,12 @@ type LinkFormValues = z.infer<typeof linkSchema>;
 
 function LinkItemCard({ 
   link, 
+  uid,
   onUpdateSuccess, 
   onDeleteSuccess 
 }: { 
   link: LinkItem;
+  uid: string;
   onUpdateSuccess: (id: string, updatedData: Partial<LinkItem>) => void;
   onDeleteSuccess: (id: string) => void;
 }) {
@@ -95,7 +97,7 @@ function LinkItemCard({
         updatedAt: serverTimestamp(),
       };
 
-      await updateDoc(doc(db, "users/anonymous/links", link.id), updatedData);
+      await updateDoc(doc(db, `users/${uid}/links`, link.id), updatedData);
       onUpdateSuccess(link.id, { ...updatedData, updatedAt: new Date() });
       setIsEditing(false);
     } catch (error) {
@@ -109,7 +111,7 @@ function LinkItemCard({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "users/anonymous/links", link.id));
+      await deleteDoc(doc(db, `users/${uid}/links`, link.id));
       onDeleteSuccess(link.id);
     } catch (error) {
       console.error("Error deleting link: ", error);
@@ -279,7 +281,7 @@ function LinkItemCard({
   );
 }
 
-export function ProfileLinks() {
+export function ProfileLinks({ uid }: { uid: string }) {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -296,7 +298,7 @@ export function ProfileLinks() {
   const fetchLinks = async () => {
     try {
       const q = query(
-        collection(db, "users/anonymous/links"),
+        collection(db, `users/${uid}/links`),
         orderBy("createdAt", "desc")
       );
       const snapshot = await getDocs(q);
@@ -313,8 +315,10 @@ export function ProfileLinks() {
   };
 
   useEffect(() => {
-    fetchLinks();
-  }, []);
+    if (uid) {
+      fetchLinks();
+    }
+  }, [uid]);
 
   const onSubmit = async (data: LinkFormValues) => {
     setIsSubmitting(true);
@@ -337,7 +341,7 @@ export function ProfileLinks() {
         createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, "users/anonymous/links"), newLinkData);
+      const docRef = await addDoc(collection(db, `users/${uid}/links`), newLinkData);
       
       // Update local state manually
       setLinks([{ id: docRef.id, ...newLinkData } as LinkItem, ...links]);
@@ -436,6 +440,7 @@ export function ProfileLinks() {
             <LinkItemCard 
               key={link.id} 
               link={link} 
+              uid={uid}
               onUpdateSuccess={(id, updatedData) => {
                 setLinks(prev => prev.map(l => l.id === id ? { ...l, ...updatedData } as LinkItem : l))
               }}
