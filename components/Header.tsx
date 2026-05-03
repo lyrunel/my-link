@@ -105,8 +105,7 @@ export function Header() {
               onClick={loginWithGoogle}
               className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-semibold text-sm shadow-sm"
             >
-              <RiGoogleFill className="w-4 h-4 mr-2" />
-              구글로 시작하기
+              로그인
             </Button>
           )
         )}
