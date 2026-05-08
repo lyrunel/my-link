@@ -151,7 +151,7 @@ function EditableField({
       title="클릭하여 수정"
     >
       <span>{value || placeholder}</span>
-      <RiEditLine className="w-4 h-4 text-neutral-400 opacity-50 group-hover/field:opacity-100 transition-opacity shrink-0" />
+      <RiEditLine className="w-4 h-4 text-neutral-400 opacity-0 group-hover/field:opacity-100 transition-opacity shrink-0" />
     </Element>
   );
 }
@@ -173,7 +173,7 @@ export default function Page() {
   };
 
   const handleUpdateDisplayName = async (val: string) => {
-    await updateProfileData({ displayName: val });
+    updateProfileData({ displayName: val });
     return true;
   };
 
@@ -184,12 +184,12 @@ export default function Page() {
     if (isDup) {
       throw new Error("이미 사용 중인 유저네임입니다.");
     }
-    await updateProfileData({ username: val });
+    updateProfileData({ username: val });
     return true;
   };
 
   const handleUpdateBio = async (val: string) => {
-    await updateProfileData({ bio: val });
+    updateProfileData({ bio: val });
     return true;
   };
 

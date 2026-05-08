@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { User } from "firebase/auth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface UserProfile {
   displayName: string;
@@ -10,71 +10,91 @@ export interface UserProfile {
 }
 
 export function useProfile(user: User | null) {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+  const queryKey = ["profile", user?.uid];
 
-    const fetchOrCreateProfile = async () => {
-      setLoading(true);
-      try {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
+  const fetchOrCreateProfile = async (): Promise<UserProfile | null> => {
+    if (!user) return null;
 
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data() as UserProfile;
+    } else {
+      let baseUsername = user.email ? user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, '') : `user${Math.floor(Math.random() * 10000)}`;
+      if (!baseUsername) baseUsername = `user${Math.floor(Math.random() * 10000)}`;
+      
+      let username = baseUsername;
+      let isUnique = false;
+      let counter = 0;
+      while (!isUnique) {
+        const q = query(collection(db, "users"), where("username", "==", username));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          isUnique = true;
         } else {
-          // Create initial profile
-          // Google email constraint: only lowercase letters, numbers, and periods
-          let baseUsername = user.email ? user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, '') : `user${Math.floor(Math.random() * 10000)}`;
-          if (!baseUsername) baseUsername = `user${Math.floor(Math.random() * 10000)}`;
-          
-          let username = baseUsername;
-          
-          // Check for uniqueness
-          let isUnique = false;
-          let counter = 0;
-          while (!isUnique) {
-            const q = query(collection(db, "users"), where("username", "==", username));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) {
-              isUnique = true;
-            } else {
-              counter++;
-              username = `${baseUsername}${counter}`;
-            }
-          }
-
-          const newProfile: UserProfile = {
-            displayName: user.displayName || "User",
-            username,
-            bio: "크리에이터 & 포트폴리오 스페이스 ✨",
-          };
-
-          await setDoc(docRef, newProfile);
-          setProfile(newProfile);
+          counter++;
+          username = `${baseUsername}${counter}`;
         }
-      } catch (error) {
-        console.error("Error fetching/creating profile:", error);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchOrCreateProfile();
-  }, [user]);
+      const newProfile: UserProfile = {
+        displayName: user.displayName || "User",
+        username,
+        bio: "크리에이터 & 포트폴리오 스페이스 ✨",
+      };
+
+      await setDoc(docRef, newProfile);
+      return newProfile;
+    }
+  };
+
+  const { data: profile = null, isLoading } = useQuery({
+    queryKey,
+    queryFn: fetchOrCreateProfile,
+    enabled: !!user,
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: Partial<UserProfile>) => {
+      if (!user) throw new Error("No user");
+      const docRef = doc(db, "users", user.uid);
+      await updateDoc(docRef, updates);
+      return updates;
+    },
+    onMutate: async (newProfileUpdates) => {
+      // 낙관적 업데이트 로직 (저장이 완료되기 전에 UI 먼저 업데이트)
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousProfile = queryClient.getQueryData<UserProfile>(queryKey);
+
+      if (previousProfile) {
+        queryClient.setQueryData<UserProfile>(queryKey, {
+          ...previousProfile,
+          ...newProfileUpdates,
+        });
+      }
+
+      return { previousProfile };
+    },
+    onError: (err, newProfileUpdates, context) => {
+      // 에러 발생 시 롤백
+      if (context?.previousProfile) {
+        queryClient.setQueryData(queryKey, context.previousProfile);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
   const checkUsernameDuplicate = async (username: string): Promise<boolean> => {
     if (!user) return false;
     const q = query(collection(db, "users"), where("username", "==", username));
     const querySnapshot = await getDocs(q);
     
-    // Check if another user has this username
     let isDuplicate = false;
     querySnapshot.forEach((doc) => {
       if (doc.id !== user.uid) {
@@ -84,17 +104,14 @@ export function useProfile(user: User | null) {
     return isDuplicate;
   };
 
-  const updateProfileData = async (updates: Partial<UserProfile>) => {
-    if (!user) return;
-    try {
-      const docRef = doc(db, "users", user.uid);
-      await updateDoc(docRef, updates);
-      setProfile((prev) => prev ? { ...prev, ...updates } : null);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
-    }
+  const updateProfileData = (updates: Partial<UserProfile>) => {
+    updateProfileMutation.mutate(updates);
   };
 
-  return { profile, loadingProfile: loading, updateProfileData, checkUsernameDuplicate };
+  return { 
+    profile, 
+    loadingProfile: isLoading, 
+    updateProfileData, 
+    checkUsernameDuplicate 
+  };
 }

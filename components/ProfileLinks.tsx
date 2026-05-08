@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { LinkItem } from "@/data/links";
-import { db } from "@/lib/firebase";
-import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useProfileLinks } from "@/hooks/useProfileLinks";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -54,17 +53,17 @@ type LinkFormValues = z.infer<typeof linkSchema>;
 function LinkItemCard({ 
   link, 
   uid,
-  onUpdateSuccess, 
-  onDeleteSuccess 
+  onUpdate, 
+  onDelete 
 }: { 
   link: LinkItem;
   uid: string;
-  onUpdateSuccess: (id: string, updatedData: Partial<LinkItem>) => void;
-  onDeleteSuccess: (id: string) => void;
+  onUpdate: (id: string, updatedData: Partial<LinkItem>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
@@ -94,11 +93,9 @@ function LinkItemCard({
         title: data.title.trim(),
         url: finalUrl,
         icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
-        updatedAt: serverTimestamp(),
       };
 
-      await updateDoc(doc(db, `users/${uid}/links`, link.id), updatedData);
-      onUpdateSuccess(link.id, { ...updatedData, updatedAt: new Date() });
+      await onUpdate(link.id, updatedData);
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating link: ", error);
@@ -111,8 +108,7 @@ function LinkItemCard({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, `users/${uid}/links`, link.id));
-      onDeleteSuccess(link.id);
+      await onDelete(link.id);
     } catch (error) {
       console.error("Error deleting link: ", error);
       alert("링크 삭제 중 오류가 발생했습니다.");
@@ -282,10 +278,9 @@ function LinkItemCard({
 }
 
 export function ProfileLinks({ uid }: { uid: string }) {
-  const [links, setLinks] = useState<LinkItem[]>([]);
+  const { links, isLoading, addLink, updateLink, deleteLink } = useProfileLinks(uid);
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
@@ -294,31 +289,6 @@ export function ProfileLinks({ uid }: { uid: string }) {
       url: "",
     },
   });
-
-  const fetchLinks = async () => {
-    try {
-      const q = query(
-        collection(db, `users/${uid}/links`),
-        orderBy("createdAt", "desc")
-      );
-      const snapshot = await getDocs(q);
-      const fetchedLinks = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as LinkItem[];
-      setLinks(fetchedLinks);
-    } catch (error) {
-      console.error("Error fetching links:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (uid) {
-      fetchLinks();
-    }
-  }, [uid]);
 
   const onSubmit = async (data: LinkFormValues) => {
     setIsSubmitting(true);
@@ -338,13 +308,9 @@ export function ProfileLinks({ uid }: { uid: string }) {
         icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
         order_index: links.length,
         is_active: true,
-        createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, `users/${uid}/links`), newLinkData);
-      
-      // Update local state manually
-      setLinks([{ id: docRef.id, ...newLinkData } as LinkItem, ...links]);
+      await addLink(newLinkData);
       
       setOpen(false);
       form.reset();
@@ -441,12 +407,8 @@ export function ProfileLinks({ uid }: { uid: string }) {
               key={link.id} 
               link={link} 
               uid={uid}
-              onUpdateSuccess={(id, updatedData) => {
-                setLinks(prev => prev.map(l => l.id === id ? { ...l, ...updatedData } as LinkItem : l))
-              }}
-              onDeleteSuccess={(id) => {
-                setLinks(prev => prev.filter(l => l.id !== id))
-              }}
+              onUpdate={async (id, data) => await updateLink({ id, updatedData: data })}
+              onDelete={async (id) => await deleteLink(id)}
             />
           ))
         )}
