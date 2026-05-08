@@ -150,6 +150,7 @@ function EditableField({
       }}
       title="클릭하여 수정"
     >
+      <span className="w-4 h-4 shrink-0 inline-block" aria-hidden="true" />
       <span>{value || placeholder}</span>
       <RiEditLine className="w-4 h-4 text-neutral-400 opacity-0 group-hover/field:opacity-100 transition-opacity shrink-0" />
     </Element>
@@ -158,33 +159,10 @@ function EditableField({
 
 export default function Page() {
   const { user, loading: authLoading, loginWithGoogle } = useAuth();
-  const { profile, loadingProfile, updateProfileData, checkUsernameDuplicate } = useProfile(user);
-
-  const validateUsername = (val: string) => {
-    // lowercase letters, numbers, periods
-    const regex = /^[a-z0-9.]+$/;
-    if (!regex.test(val)) {
-      return "소문자, 숫자, 마침표(.)만 사용 가능합니다.";
-    }
-    if (val.length < 3 || val.length > 30) {
-      return "3자 이상 30자 이하로 입력해주세요.";
-    }
-    return null;
-  };
+  const { profile, loadingProfile, updateProfileData } = useProfile(user);
 
   const handleUpdateDisplayName = async (val: string) => {
     updateProfileData({ displayName: val });
-    return true;
-  };
-
-  const handleUpdateUsername = async (val: string) => {
-    if (val === profile?.username) return true;
-    
-    const isDup = await checkUsernameDuplicate(val);
-    if (isDup) {
-      throw new Error("이미 사용 중인 유저네임입니다.");
-    }
-    updateProfileData({ username: val });
     return true;
   };
 
@@ -212,7 +190,7 @@ export default function Page() {
       ) : !user ? (
         <LandingPage loginWithGoogle={loginWithGoogle} />
       ) : (
-        <div className="w-full max-w-md flex flex-col items-center z-10 py-24 px-6 sm:px-12">
+        <div className="w-full max-w-lg flex flex-col items-center z-10 py-24 px-6 sm:px-12">
           {/* Profile Section */}
           <div className="group relative flex flex-col items-center mb-10 w-full">
             {/* Avatar Ring Animation */}
@@ -247,18 +225,8 @@ export default function Page() {
                   </div>
 
                   <div className="mb-2 w-full relative flex flex-col items-center justify-center min-h-[24px]">
-                    <div className="flex items-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                      <span className="mr-[1px]">@</span>
-                      <EditableField
-                        value={profile.username}
-                        onSave={handleUpdateUsername}
-                        onValidate={validateUsername}
-                        isSaving={false}
-                        as="p"
-                        className=""
-                        inputClassName="text-sm font-semibold text-indigo-600 dark:text-indigo-400 max-w-[150px]"
-                        placeholder="username"
-                      />
+                    <div className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+                      @{profile.username}
                     </div>
                   </div>
 

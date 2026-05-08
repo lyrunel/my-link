@@ -193,9 +193,9 @@ function LinkItemCard({
           
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/5 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
           
-          <CardContent className="p-4 sm:p-5 flex items-center relative min-h-[72px]">
+          <CardContent className="py-3 px-6 sm:py-4 sm:px-8 flex items-center relative min-h-[68px]">
             {link.icon && (
-              <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center transition-transform duration-500 z-10">
+              <div className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-transform duration-500 z-10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={link.icon}
@@ -205,7 +205,7 @@ function LinkItemCard({
               </div>
             )}
             
-            <span className="w-full text-center font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 transition-colors duration-300 z-10 pl-12 pr-16">
+            <span className="w-full text-center font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 transition-colors duration-300 z-10 px-14 sm:px-16">
               {link.title}
             </span>
             

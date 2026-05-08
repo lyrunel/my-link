@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { 
   RiGoogleFill, 
@@ -24,6 +26,7 @@ import { useEffect, useState } from "react";
 
 export function Header() {
   const { user, loading, loginWithGoogle, logout } = useAuth();
+  const { profile } = useProfile(user);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -40,8 +43,17 @@ export function Header() {
       <div className="flex items-center gap-4">
         {!loading && (
           user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full transition-transform hover:scale-105 active:scale-95">
+            <>
+              {profile?.username && (
+                <Link href={`/${profile.username}`} className="hidden sm:inline-flex">
+                  <Button className="h-9 px-4 font-semibold text-sm rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm border-none">
+                    <RiExternalLinkLine className="mr-1.5 h-4 w-4" />
+                    내 프로필
+                  </Button>
+                </Link>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full transition-transform hover:scale-105 active:scale-95">
                 {user.photoURL ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -71,10 +83,12 @@ export function Header() {
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer rounded-lg py-2">
-                  <RiExternalLinkLine className="mr-2 h-4 w-4" />
-                  <span>내 프로필 보기</span>
-                </DropdownMenuItem>
+                <Link href={profile?.username ? `/${profile.username}` : "#"}>
+                  <DropdownMenuItem className="cursor-pointer rounded-lg py-2">
+                    <RiExternalLinkLine className="mr-2 h-4 w-4" />
+                    <span>내 프로필 보기</span>
+                  </DropdownMenuItem>
+                </Link>
                 
                 {mounted && (
                   <DropdownMenuItem 
@@ -100,7 +114,8 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
+          </>
+        ) : (
             <Button
               onClick={loginWithGoogle}
               className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-semibold text-sm shadow-sm"

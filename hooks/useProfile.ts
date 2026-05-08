@@ -7,6 +7,7 @@ export interface UserProfile {
   displayName: string;
   username: string;
   bio: string;
+  photoURL?: string | null;
 }
 
 export function useProfile(user: User | null) {
@@ -21,7 +22,13 @@ export function useProfile(user: User | null) {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data() as UserProfile;
+      const data = docSnap.data() as UserProfile;
+      // 기존 유저의 경우 photoURL이 없거나 변경되었을 수 있으므로 동기화
+      if (user.photoURL && data.photoURL !== user.photoURL) {
+        updateDoc(docRef, { photoURL: user.photoURL }).catch(console.error);
+        data.photoURL = user.photoURL;
+      }
+      return data;
     } else {
       let baseUsername = user.email ? user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, '') : `user${Math.floor(Math.random() * 10000)}`;
       if (!baseUsername) baseUsername = `user${Math.floor(Math.random() * 10000)}`;
@@ -44,6 +51,7 @@ export function useProfile(user: User | null) {
         displayName: user.displayName || "User",
         username,
         bio: "크리에이터 & 포트폴리오 스페이스 ✨",
+        photoURL: user.photoURL,
       };
 
       await setDoc(docRef, newProfile);

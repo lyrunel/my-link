@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. 공통 함수
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // 2. Users 컬렉션 (프로필 정보)
+    match /users/{userId} {
+      allow read: if true;
+      
+      allow write: if isOwner(userId) 
+                   // 허용된 필드만 쓰기 가능 (잘못된 필드 삽입 방지)
+                   && request.resource.data.keys().hasOnly(['displayName', 'username', 'bio', 'photoURL'])
+                   // username 정규식 검증
+                   && (request.resource.data.username == null 
+                       || request.resource.data.username.matches('^[a-z0-9.]{3,30}$'))
+                   // bio(소개글) 길이 제한 (최대 150자)
+                   && (request.resource.data.bio == null 
+                       || request.resource.data.bio.size() <= 150)
+                   // displayName 길이 제한 (최대 50자)
+                   && (request.resource.data.displayName == null
+                       || request.resource.data.displayName.size() <= 50);
+      
+      // 3. Links 서브컬렉션
+      match /links/{linkId} {
+        allow read: if true;
+        
+        allow write: if isOwner(userId)
+                     // 링크 컬렉션의 허용된 필드만 쓰기 가능
+                     && request.resource.data.keys().hasOnly(['title', 'url', 'icon', 'order_index', 'is_active', 'createdAt', 'updatedAt'])
+                     // title 길이 제한
+                     && (request.resource.data.title == null || request.resource.data.title.size() <= 100);
+      }
+    }
+    
+    // 4. 그 외 모든 경로 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
