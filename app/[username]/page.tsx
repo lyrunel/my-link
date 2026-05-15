@@ -7,14 +7,29 @@ import { RiLoader4Line } from "@remixicon/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
 import { LinkItem } from "@/data/links";
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-function PublicLinkItemCard({ link }: { link: LinkItem }) {
+function PublicLinkItemCard({ link, uid }: { link: LinkItem; uid: string }) {
+  const handleClick = () => {
+    if (!uid || !link.id) return;
+    try {
+      const linkRef = doc(db, `users/${uid}/links`, link.id);
+      updateDoc(linkRef, {
+        clickCount: increment(1)
+      }).catch((error) => console.error("Failed to increment click count:", error));
+    } catch (error) {
+      console.error("Error setting up click count increment:", error);
+    }
+  };
+
   return (
     <div className="relative group w-full block">
       <a
         href={link.url}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleClick}
         className="w-full outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/50 rounded-2xl block"
       >
         <Card className="relative overflow-hidden bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.02)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_40px_rgb(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 ease-out border-b-2 hover:border-b-indigo-500/50 dark:hover:border-b-indigo-400/50 rounded-2xl">
@@ -118,7 +133,7 @@ export default function PublicProfilePage() {
             </div>
           ) : (
             links.map((link) => (
-              <PublicLinkItemCard key={link.id} link={link} />
+              <PublicLinkItemCard key={link.id} link={link} uid={profile.uid} />
             ))
           )}
         </div>

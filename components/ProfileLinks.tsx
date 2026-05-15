@@ -27,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RiAddLine, RiEditLine, RiDeleteBinLine, RiLoader4Line } from "@remixicon/react";
+import { RiAddLine, RiEditLine, RiDeleteBinLine, RiLoader4Line, RiEyeLine } from "@remixicon/react";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -205,9 +205,15 @@ function LinkItemCard({
               </div>
             )}
             
-            <span className="w-full text-center font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 transition-colors duration-300 z-10 px-14 sm:px-16">
-              {link.title}
-            </span>
+            <div className="w-full flex flex-col items-center justify-center z-10 px-14 sm:px-16">
+              <span className="font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 transition-colors duration-300">
+                {link.title}
+              </span>
+              <span className="flex items-center gap-1 text-xs font-medium text-neutral-500 dark:text-neutral-400 mt-1 bg-white/50 dark:bg-black/30 px-2 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-800">
+                <RiEyeLine className="w-3.5 h-3.5" />
+                {link.clickCount || 0}
+              </span>
+            </div>
             
           </CardContent>
         </Card>
@@ -308,6 +314,7 @@ export function ProfileLinks({ uid }: { uid: string }) {
         icon: `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
         order_index: links.length,
         is_active: true,
+        clickCount: 0,
       };
 
       await addLink(newLinkData);

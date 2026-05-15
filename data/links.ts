@@ -6,6 +6,7 @@ export interface LinkItem {
   // PRD ERD 참고형 추가 필드 (선택 사항)
   order_index?: number;
   is_active?: boolean;
+  clickCount?: number;
   createdAt?: any;
   updatedAt?: any;
 }
@@ -18,6 +19,7 @@ export const dummyLinks: LinkItem[] = [
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=instagram.com&sz=256',
     order_index: 0,
     is_active: true,
+    clickCount: 0,
   },
   {
     id: '2',
@@ -26,6 +28,7 @@ export const dummyLinks: LinkItem[] = [
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=youtube.com&sz=256',
     order_index: 1,
     is_active: true,
+    clickCount: 0,
   },
   {
     id: '3',
@@ -34,6 +37,7 @@ export const dummyLinks: LinkItem[] = [
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=blogger.com&sz=256',
     order_index: 2,
     is_active: true,
+    clickCount: 0,
   },
   {
     id: '4',
@@ -42,6 +46,7 @@ export const dummyLinks: LinkItem[] = [
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=github.com&sz=256',
     order_index: 3,
     is_active: true,
+    clickCount: 0,
   },
   {
     id: '5',
@@ -50,5 +55,6 @@ export const dummyLinks: LinkItem[] = [
     icon: 'https://s2.googleusercontent.com/s2/favicons?domain=myportfolio.com&sz=256',
     order_index: 4,
     is_active: true,
+    clickCount: 0,
   },
 ];

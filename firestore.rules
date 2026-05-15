@@ -29,11 +29,20 @@ service cloud.firestore {
       match /links/{linkId} {
         allow read: if true;
         
-        allow write: if isOwner(userId)
-                     // 링크 컬렉션의 허용된 필드만 쓰기 가능
-                     && request.resource.data.keys().hasOnly(['title', 'url', 'icon', 'order_index', 'is_active', 'createdAt', 'updatedAt'])
-                     // title 길이 제한
+        allow create: if isOwner(userId)
+                     && request.resource.data.keys().hasOnly(['title', 'url', 'icon', 'order_index', 'is_active', 'clickCount', 'createdAt', 'updatedAt'])
                      && (request.resource.data.title == null || request.resource.data.title.size() <= 100);
+                     
+        allow update: if (isOwner(userId)
+                     && request.resource.data.keys().hasOnly(['title', 'url', 'icon', 'order_index', 'is_active', 'clickCount', 'createdAt', 'updatedAt'])
+                     && (request.resource.data.title == null || request.resource.data.title.size() <= 100))
+                     || (
+                       // allow anyone to increment clickCount
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount'])
+                       && request.resource.data.clickCount == resource.data.get('clickCount', 0) + 1
+                     );
+                     
+        allow delete: if isOwner(userId);
       }
     }
     
