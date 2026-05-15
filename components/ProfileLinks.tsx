@@ -209,10 +209,6 @@ function LinkItemCard({
               <span className="font-semibold text-[15px] sm:text-base text-neutral-700 dark:text-neutral-200 transition-colors duration-300">
                 {link.title}
               </span>
-              <span className="flex items-center gap-1 text-xs font-medium text-neutral-500 dark:text-neutral-400 mt-1 bg-white/50 dark:bg-black/30 px-2 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-800">
-                <RiEyeLine className="w-3.5 h-3.5" />
-                {link.clickCount || 0}
-              </span>
             </div>
             
           </CardContent>
@@ -220,7 +216,11 @@ function LinkItemCard({
       </a>
 
       {/* 우측 조작 버튼 영역: hover 없이 항상 표시, z-index를 올려서 a 태그 클릭 방해 회피 */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 z-20">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 group-hover:-translate-y-[calc(50%+0.25rem)] flex items-center gap-1 z-20 transition-all duration-300 ease-out">
+        <div className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 mr-1 sm:mr-2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md px-2 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm pointer-events-none">
+          <RiEyeLine className="w-3.5 h-3.5" />
+          {link.clickCount || 0}
+        </div>
         <Button
           variant="ghost"
           size="icon"
