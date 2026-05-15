@@ -10,7 +10,8 @@ import {
   RiExternalLinkLine, 
   RiSettings4Line, 
   RiMoonLine, 
-  RiSunLine 
+  RiSunLine,
+  RiBarChartBoxLine
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -87,6 +88,12 @@ export function Header() {
                   <DropdownMenuItem className="cursor-pointer rounded-lg py-2">
                     <RiExternalLinkLine className="mr-2 h-4 w-4" />
                     <span>내 프로필 보기</span>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/stats">
+                  <DropdownMenuItem className="cursor-pointer rounded-lg py-2">
+                    <RiBarChartBoxLine className="mr-2 h-4 w-4" />
+                    <span>통계 보기</span>
                   </DropdownMenuItem>
                 </Link>
                 
