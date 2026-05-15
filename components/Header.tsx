@@ -37,9 +37,9 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 z-50 flex items-center justify-between px-6 sm:px-12">
-      <div className="font-extrabold text-xl tracking-tight text-neutral-900 dark:text-white">
+      <Link href="/" className="font-extrabold text-xl tracking-tight text-neutral-900 dark:text-white hover:opacity-80 transition-opacity">
         MyLink <span className="text-indigo-600">.</span>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-4">
         {!loading && (

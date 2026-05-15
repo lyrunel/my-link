@@ -49,7 +49,7 @@ export default function StatsPage() {
         <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-purple-400/30 dark:bg-purple-600/20 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-lighten animate-pulse" style={{ animationDuration: '10s' }} />
       </div>
 
-      <div className="w-full max-w-3xl flex flex-col z-10 py-12 px-6 sm:px-12">
+      <div className="w-full max-w-3xl flex flex-col z-10 pt-24 pb-12 px-6 sm:px-12">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-full bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 backdrop-blur-md transition-colors">
@@ -112,6 +112,7 @@ export default function StatsPage() {
                       <YAxis 
                         tickLine={false}
                         axisLine={false}
+                        allowDecimals={false}
                         tickFormatter={(value) => `${value}`}
                         className="text-xs font-semibold"
                         tick={{ fill: "currentColor", opacity: 0.7 }}
