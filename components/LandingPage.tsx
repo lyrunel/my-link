@@ -224,7 +224,7 @@ export function LandingPage({ loginWithGoogle }: { loginWithGoogle: () => void }
         {/* 즉석 닉네임 입력 폼 */}
         <div className="w-full max-w-md px-4 pt-2">
           <div className="p-2 rounded-2xl bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-[0_10px_35px_-10px_rgba(79,70,229,0.15)] focus-within:shadow-[0_12px_40px_-10px_rgba(79,70,229,0.25)] dark:focus-within:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.5)] transition-all duration-300 flex items-center gap-1.5 focus-within:border-indigo-500/50 dark:focus-within:border-indigo-500/40">
-            <span className="text-sm font-semibold text-neutral-400 dark:text-neutral-500 pl-3 select-none">mylink.com/</span>
+            <span className="text-sm font-semibold text-neutral-400 dark:text-neutral-500 pl-3 select-none">my-link-olive.vercel.app/</span>
             <input
               type="text"
               value={username}

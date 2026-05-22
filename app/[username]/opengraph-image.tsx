@@ -433,7 +433,7 @@ export default async function Image({ params }: ImageParams) {
             display: "flex",
           }}
         >
-          {`mylink.com/${profile.username}`}
+          {`my-link-olive.vercel.app/${profile.username}`}
         </div>
       </div>
     ),

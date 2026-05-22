@@ -15,7 +15,7 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://my-link-olive.vercel.app"),
   title: {
     default: "MyLink - 나만의 멀티링크 프로필",
     template: "%s | MyLink",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://mylink.com",
+    url: "https://my-link-olive.vercel.app",
     title: "MyLink - 나만의 멀티링크 프로필",
     description: "소셜 미디어, 포트폴리오, 블로그 링크를 하나의 프로필 페이지에 담아 세상과 공유하세요.",
     siteName: "MyLink",

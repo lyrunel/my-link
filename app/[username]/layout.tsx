@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   
   const title = `${profile.displayName} (@${profile.username})`
   const description = profile.bio || `${profile.displayName}님의 MyLink 멀티링크 프로필 페이지입니다. SNS, 포트폴리오, 주요 링크를 만나보세요.`
-  const profileUrl = `https://mylink.com/${profile.username}`
+  const profileUrl = `https://my-link-olive.vercel.app/${profile.username}`
   
   return {
     title,

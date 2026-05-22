@@ -197,7 +197,7 @@ export default async function Image() {
             display: "flex",
           }}
         >
-          mylink.com
+          my-link-olive.vercel.app
         </div>
       </div>
     ),
