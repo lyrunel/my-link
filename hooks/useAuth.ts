@@ -1,41 +1,46 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { useState, useEffect } from "react"
+import {
+  User,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth"
+import { auth, googleProvider } from "@/lib/firebase"
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+      setUser(currentUser)
+      setLoading(false)
+    })
 
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribe()
+  }, [])
 
   const loginWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider)
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
-        console.log('로그인 팝업이 닫혔습니다.');
-        return;
+      if (error.code === "auth/popup-closed-by-user") {
+        console.log("로그인 팝업이 닫혔습니다.")
+        return
       }
-      console.error("Error logging in with Google: ", error);
+      console.error("Error logging in with Google: ", error)
     }
-  };
+  }
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      await signOut(auth)
     } catch (error) {
-      console.error("Error logging out: ", error);
+      console.error("Error logging out: ", error)
     }
-  };
+  }
 
-  return { user, loading, loginWithGoogle, logout };
+  return { user, loading, loginWithGoogle, logout }
 }

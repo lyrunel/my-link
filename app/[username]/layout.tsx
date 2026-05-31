@@ -4,16 +4,20 @@ import { db } from "@/lib/firebase"
 
 async function getProfileData(username: string) {
   try {
-    const q = query(collection(db, "users"), where("username", "==", username), limit(1))
+    const q = query(
+      collection(db, "users"),
+      where("username", "==", username),
+      limit(1)
+    )
     const snapshot = await getDocs(q)
-    
+
     if (snapshot.empty) {
       return null
     }
-    
+
     const docSnapshot = snapshot.docs[0]
     const data = docSnapshot.data()
-    
+
     return {
       uid: docSnapshot.id,
       displayName: (data.displayName as string) || "",
@@ -23,7 +27,10 @@ async function getProfileData(username: string) {
       theme: (data.theme as string | undefined) || "indigo",
     }
   } catch (error) {
-    console.error(`[Metadata Debug] Firestore fetch failed for username "${username}":`, error)
+    console.error(
+      `[Metadata Debug] Firestore fetch failed for username "${username}":`,
+      error
+    )
     return null
   }
 }
@@ -33,23 +40,29 @@ interface LayoutProps {
   params: Promise<{ username: string }> | { username: string }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ username: string }> | { username: string } }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }> | { username: string }
+}): Promise<Metadata> {
   const resolvedParams = await params
   const username = resolvedParams.username
-  
+
   const profile = await getProfileData(username)
-  
+
   if (!profile) {
     return {
       title: "프로필을 찾을 수 없습니다",
       description: "MyLink에서 해당 프로필 페이지를 찾을 수 없습니다.",
     }
   }
-  
+
   const title = `${profile.displayName} (@${profile.username})`
-  const description = profile.bio || `${profile.displayName}님의 MyLink 멀티링크 프로필 페이지입니다. SNS, 포트폴리오, 주요 링크를 만나보세요.`
+  const description =
+    profile.bio ||
+    `${profile.displayName}님의 MyLink 멀티링크 프로필 페이지입니다. SNS, 포트폴리오, 주요 링크를 만나보세요.`
   const profileUrl = `https://my-link-olive.vercel.app/${profile.username}`
-  
+
   return {
     title,
     description,
@@ -77,6 +90,10 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   }
 }
 
-export default function UserProfileLayout({ children }: { children: React.ReactNode }) {
+export default function UserProfileLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return <>{children}</>
 }
